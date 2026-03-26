@@ -15,12 +15,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor 
 public class PlantDiseaseDetectionService {
@@ -58,6 +60,15 @@ public class PlantDiseaseDetectionService {
      * Private method that performs the actual API call.
      */
     private PlantIdApiResponse callPlantIdApi(List<String> images, boolean similarImages) {
+        if (apiUrl == null || apiUrl.isBlank()) {
+            throw new IllegalStateException("PLANT_ID_URL is not configured.");
+        }
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException("PLANTID_KEY is not configured.");
+        }
+
+        log.info("Calling Plant.id API at URL: {}", apiUrl);
+
         Map<String, Object> body = new HashMap<>();
         body.put("images", images);
         body.put("similar_images", similarImages);
@@ -81,9 +92,6 @@ public class PlantDiseaseDetectionService {
         return response.getBody();
     }
 
-    /**
-     * Private helper to map the raw API response to our clean, final DTO.
-     */
     /**
      * Private helper to map the raw API response to our clean, final DTO.
      */

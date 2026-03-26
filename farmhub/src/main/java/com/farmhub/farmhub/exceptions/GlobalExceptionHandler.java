@@ -9,12 +9,15 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.RestClientException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.naming.AuthenticationException;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -71,10 +74,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponseDto handleGenericException(Exception ex) {
-        // You should log the full exception here
-        // ex.printStackTrace(); 
-        
+        log.error("Unexpected error occurred: ", ex);
         return new ErrorResponseDto("Internal Server Error", "An unexpected error occurred. Please try again.");
+    }
+
+    /**
+     * Handles exceptions from REST calls (e.g., Plant.id API).
+     */
+    @ExceptionHandler(RestClientException.class)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    public ErrorResponseDto handleRestClientException(RestClientException ex) {
+        log.error("External API call failed: ", ex);
+        return new ErrorResponseDto("Bad Gateway", "Error communicating with external service.");
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
